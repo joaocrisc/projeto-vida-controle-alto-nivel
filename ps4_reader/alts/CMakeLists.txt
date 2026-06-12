@@ -9,6 +9,8 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
+find_package(std_msgs REQUIRED)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -23,15 +25,43 @@ if(BUILD_TESTING)
 endif()
 
 add_executable(ps4_reader_node
-  src/ps4_reader_node.cpp)
+  src/ps4_reader_node.cpp
+  serial_sender_node
+  src/serial_sender_node.cpp
+  
+  )
 
 ament_target_dependencies(
   ps4_reader_node
   rclcpp
-  sensor_msgs)
+  sensor_msgs
+  serial_sender_node
+  )
+
+  rosidl_generate_interfaces(${PROJECT_NAME}
+  "msg/CarCommand.msg"
+  DEPENDENCIES std_msgs
+)
+rosidl_target_interfaces(
+  ps4_reader_node
+  ${PROJECT_NAME} "rosidl_typesupport_cpp"
+)
+
+rosidl_target_interfaces(
+  serial_sender_node
+  ${PROJECT_NAME} "rosidl_typesupport_cpp"
+)
+
 
 install(TARGETS
   ps4_reader_node
+  serial_sender_node
   DESTINATION lib/${PROJECT_NAME})
 
+  install(
+  DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME}
+)
+
+  
 ament_package()
